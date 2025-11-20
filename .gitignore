@@ -32,7 +32,6 @@ data/
 logs/
 logs/*.log
 logs/apache/
-.claude/
 dnsmasq/wfc.conf
 nginx/
 
