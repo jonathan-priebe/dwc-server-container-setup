@@ -5,6 +5,52 @@ echo "========================================="
 echo "DWC Admin Panel - Starting up..."
 echo "========================================="
 
+# =================================
+# Environment Variable Checker
+# =================================
+echo "Checking required environment variables..."
+
+MISSING_VARS=()
+
+# Required variables
+[ -z "$SECRET_KEY" ] && MISSING_VARS+=("SECRET_KEY")
+[ -z "$NAS_API_TOKEN" ] && MISSING_VARS+=("NAS_API_TOKEN")
+
+# Database variables (if using MariaDB)
+if [ "$DATABASE_ENGINE" = "mariadb" ]; then
+    [ -z "$DATABASE_NAME" ] && MISSING_VARS+=("DATABASE_NAME")
+    [ -z "$DATABASE_USER" ] && MISSING_VARS+=("DATABASE_USER")
+    [ -z "$DATABASE_PASSWORD" ] && MISSING_VARS+=("DATABASE_PASSWORD")
+    [ -z "$DATABASE_HOST" ] && MISSING_VARS+=("DATABASE_HOST")
+fi
+
+# Check if any variables are missing
+if [ ${#MISSING_VARS[@]} -ne 0 ]; then
+    echo ""
+    echo "ERROR: Missing required environment variables:"
+    for var in "${MISSING_VARS[@]}"; do
+        echo "  - $var"
+    done
+    echo ""
+    echo "Please set these variables in your .env file or docker-compose.yml"
+    echo "See .env.example for reference."
+    exit 1
+fi
+
+echo "All required environment variables are set."
+
+# =================================
+# Optional: Show configuration
+# =================================
+if [ "$DEBUG" = "True" ]; then
+    echo ""
+    echo "Configuration:"
+    echo "  DATABASE_ENGINE: ${DATABASE_ENGINE:-sqlite}"
+    echo "  DATABASE_NAME: ${DATABASE_NAME:-dwc_server.db}"
+    echo "  DEBUG: ${DEBUG:-False}"
+    echo ""
+fi
+
 # Wait for database to be ready (if using MariaDB)
 if [ "$DATABASE_ENGINE" = "mariadb" ]; then
     echo "Waiting for MariaDB to be ready..."
