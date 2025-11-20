@@ -134,7 +134,8 @@ services:
       - QR_PORT=27900
       - DLS1_HOST=0.0.0.0
       - DLS1_PORT=9003
-      - DATABASE_URL=${API_BASE_URL:-http://admin:7999/api}
+      - API_BASE_URL=${API_BASE_URL:-http://admin:7999/api}
+      - NAS_API_TOKEN=${NAS_API_TOKEN:-}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - ./data:/app/data  # Shared with admin for SQLite

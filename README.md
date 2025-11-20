@@ -183,25 +183,8 @@ git clone --recurse-submodules https://github.com/jonathan-priebe/dwc-server-con
 cd dwc-server-container-setup
 ```
 
-**Choose your deployment method:**
-
-This project provides multiple Docker Compose configurations for different use cases. All configurations are located in the `docker-compose-examples/` directory:
-
-| Configuration | Description | Best For |
-|--------------|-------------|----------|
-| **docker-compose.ghcr.yml** | Production with GHCR images (SQLite) | Quick production deployment |
-| **docker-compose.ghcr-mariadb.yml** | Production with GHCR + MariaDB + GTS | Full production with Pokemon GTS |
-| **docker-compose.dev.yml** | Local development builds | Development & testing |
-
-> **For detailed configuration options and examples, see [docker-compose-examples/README.md](docker-compose-examples/README.md)**
-
-**Option A: Production Setup (Pre-built Images from GHCR)**
-
-Fast deployment using pre-built images from GitHub Container Registry:
-
+**Configure environment**
 ```bash
-cd docker-compose-examples
-
 # Copy and configure environment
 cp .env.example .env
 
@@ -209,38 +192,52 @@ cp .env.example .env
 SECRET_KEY=$(openssl rand -base64 50)
 NAS_API_TOKEN=$(openssl rand -hex 20)
 
-# Edit .env with your values
+# Edit .env with your values (set SECRET_KEY and NAS_API_TOKEN)
 nano .env
-
-# For SQLite (basic Wi-Fi functionality):
-docker compose -f docker-compose.ghcr.yml up -d
-
-# OR for MariaDB + GTS (full features including Pokemon trading):
-docker compose -f docker-compose.ghcr-mariadb.yml up -d
 ```
 
-**Option B: Development Setup (Local Builds)**
+**Choose your deployment method:**
 
-Build images locally from source for development:
+#### Simple Start (Root docker-compose.yml)
+
+Fastest way to get started - uses the root `docker-compose.yml`:
+
+```bash
+# SQLite (basic Wi-Fi functionality):
+docker compose up -d
+
+# OR MariaDB + GTS (full features including Pokemon trading):
+docker compose --profile mariadb up -d
+```
+
+#### Advanced Deployment (docker-compose-examples/)
+
+For production with pre-built GHCR images or custom configurations:
+
+| Configuration | Description | Best For |
+|--------------|-------------|----------|
+| **docker-compose.ghcr.yml** | Production with GHCR images (SQLite) | Quick production deployment |
+| **docker-compose.ghcr-mariadb.yml** | Production with GHCR + MariaDB + GTS | Full production with Pokemon GTS |
+| **docker-compose.dev.yml** | Local development builds | Development & testing |
 
 ```bash
 cd docker-compose-examples
-
-# Copy and configure environment
-cp .env.example .env
+cp .env.example .env  # Configure if different from root .env
 nano .env
 
-# Build and start (SQLite):
-docker compose -f docker-compose.dev.yml up -d
+# Production with pre-built images (SQLite):
+docker compose -f docker-compose.ghcr.yml up -d
 
-# OR with MariaDB + GTS:
-docker compose -f docker-compose.dev.yml --profile mariadb up -d
+# Production with pre-built images (MariaDB + GTS):
+docker compose -f docker-compose.ghcr-mariadb.yml up -d
 ```
 
+> **For detailed configuration options and examples, see [docker-compose-examples/README.md](docker-compose-examples/README.md)**
+
 > **Note**:
-> - GHCR images are recommended for production (faster deployment)
+> - Root `docker-compose.yml` builds locally - best for getting started quickly
+> - GHCR images (`docker-compose-examples/*.ghcr.yml`) are pre-built - faster for production
 > - MariaDB 10.5 is required for GTS compatibility with Mono/.NET
-> - See [docker-compose-examples/README.md](docker-compose-examples/README.md) for detailed configuration options
 
 ### DNS Configuration
 
@@ -375,21 +372,48 @@ The NAS_API_TOKEN is automatically registered in Django when the admin container
 
 **First-time Setup**:
 
-1. Set admin credentials in `docker-compose-examples/.env`:
+1. Set admin credentials in `.env`:
    ```env
    DJANGO_SUPERUSER_USERNAME=admin
    DJANGO_SUPERUSER_PASSWORD=your-secure-password
    DJANGO_SUPERUSER_EMAIL=admin@example.com
    ```
 
-2. Or create manually (from `docker-compose-examples/` directory):
+2. Or create manually:
    ```bash
+   # Using root docker-compose.yml:
+   docker compose exec admin python manage.py createsuperuser
+
+   # Using docker-compose-examples:
    docker compose -f docker-compose.ghcr.yml exec admin python manage.py createsuperuser
    ```
 
 ### Managing Services
 
-All commands should be run from the `docker-compose-examples/` directory:
+**Using root docker-compose.yml:**
+
+```bash
+# View all containers
+docker compose ps
+
+# View logs (all services)
+docker compose logs -f
+
+# View specific service logs
+docker compose logs -f gamespy
+docker compose --profile mariadb logs -f gts
+
+# Restart a service
+docker compose restart admin
+
+# Stop all services
+docker compose down
+
+# Stop and remove volumes (full reset)
+docker compose down -v
+```
+
+**Using docker-compose-examples:**
 
 ```bash
 cd docker-compose-examples
@@ -409,12 +433,9 @@ docker compose -f docker-compose.ghcr.yml restart admin
 
 # Stop all services
 docker compose -f docker-compose.ghcr.yml down
-
-# Stop and remove volumes (full reset)
-docker compose -f docker-compose.ghcr.yml down -v
 ```
 
-> **Tip**: Replace `docker-compose.ghcr.yml` with your chosen configuration file (`docker-compose.ghcr-mariadb.yml` or `docker-compose.dev.yml`)
+> **Tip**: Replace `docker-compose.ghcr.yml` with your chosen configuration file
 
 ### API Access
 
@@ -457,14 +478,20 @@ The Global Trade Station allows Pokemon trading between players.
 
 ### Enable GTS
 
-**Using GHCR Images (Production):**
+**Using root docker-compose.yml:**
+
+```bash
+docker compose --profile mariadb up -d
+```
+
+**Using docker-compose-examples (GHCR Images - Production):**
 
 ```bash
 cd docker-compose-examples
 docker compose -f docker-compose.ghcr-mariadb.yml up -d
 ```
 
-**Using Local Builds (Development):**
+**Using docker-compose-examples (Local Builds - Development):**
 
 ```bash
 cd docker-compose-examples
@@ -676,4 +703,3 @@ This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) 
 For issues and contributions, please visit: [GitHub Repository](https://github.com/jonathan-priebe/pkmn-wfc-server-docker-setup)
 
 - 📫 Reach me via GitHub or [LinkedIn](https://www.linkedin.com/in/jonathan-p-34471b1a5/)
-
