@@ -145,6 +145,12 @@ services:
 - Packages must be enabled (Settings → Packages)
 - `GITHUB_TOKEN` automatically has the required permissions
 
+### Submodules
+
+The workflow automatically checks out all Git submodules recursively. This ensures that dependencies like `dwc_server/utils/friendcode.py` are available during the build process.
+
+If your repository uses submodules, make sure they are properly configured in `.gitmodules`.
+
 ### Troubleshooting
 
 **Build fails:**
