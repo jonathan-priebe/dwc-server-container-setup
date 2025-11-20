@@ -1,8 +1,0 @@
-[submodule "admin_panel"]
-	path = admin_panel
-	url = https://github.com/jonathan-priebe/dwc-django-admin-panel.git
-	branch = main
-[submodule "dwc_server"]
-	path = dwc_server
-	url = https://github.com/jonathan-priebe/dwc-server-emulator.git
-	branch = main
