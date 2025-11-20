@@ -1,6 +1,6 @@
 # DWC Server Python3
 
-Modern Nintendo DS/Wii Wi-Fi Connection Server Emulator with Django Admin Panel and Pokemon GTS support.
+A Docker-based setup for hosting a custom Nintendo Wi-Fi Connection (WFC) server, enabling online functionality for various Nintendo DS and Wii titles with Django Admin Panel and Pokemon GTS support.
 
 ## Table of Contents
 
@@ -180,8 +180,8 @@ Example: Profile 88 + ADAJ = `3693-6718-7544`
 **Clone the repository & Configure environment**
 ```bash
 # Clone repository
-git clone https://github.com/your-repo/dwc-server-python3.git
-cd dwc-server-python3
+git clone --recurse-submodules https://github.com/jonathan-priebe/dwc-server-container-setup.git
+cd dwc-server-container-setup
 
 # Create environment file
 cp .env.example .env
