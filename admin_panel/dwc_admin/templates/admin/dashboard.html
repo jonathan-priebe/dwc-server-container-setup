@@ -1,0 +1,301 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Dashboard - DWC Server{% endblock %}
+
+{% block content %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card.online {
+        border-left: 4px solid #28a745;
+    }
+    
+    .stat-card.total {
+        border-left: 4px solid #007bff;
+    }
+    
+    .stat-card.activity {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .stat-card.bans {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .stat-value {
+        color: #666;
+        font-size: 36px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+    
+    .data-table {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .data-table h3 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+    }
+    
+    .data-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table th {
+        background: #666;
+        padding: 10px;
+        text-align: left;
+        font-weight: bold;
+    }
+    
+    .data-table td {
+        padding: 10px;
+        border-top: 1px solid #ddd;
+    }
+    
+    .status-online {
+        color: #28a745;
+        font-weight: bold;
+    }
+    
+    .status-offline {
+        color: #6c757d;
+    }
+    
+    .platform-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .platform-DS { background: #007bff; }
+    .platform-DSi { background: #17a2b8; }
+    .platform-Wii { background: #6f42c1; }
+</style>
+
+<h1>🎮 DWC Server Dashboard</h1>
+
+<!-- Main Stats -->
+<div class="stats-grid">
+    <div class="stat-card online">
+        <div class="stat-label">🟢 Online Now</div>
+        <div class="stat-value">{{ stats.online_consoles }}</div>
+        <div style="color: #666;">Consoles active (5min)</div>
+    </div>
+    
+    <div class="stat-card total">
+        <div class="stat-label">📱 Total Consoles</div>
+        <div class="stat-value">{{ stats.total_consoles }}</div>
+        <div style="color: #666;">Registered devices</div>
+    </div>
+    
+    <div class="stat-card total">
+        <div class="stat-label">👥 Total Profiles</div>
+        <div class="stat-value">{{ stats.total_profiles }}</div>
+        <div style="color: #666;">Friend codes issued</div>
+    </div>
+    
+    <div class="stat-card activity">
+        <div class="stat-label">🎯 Logins Today</div>
+        <div class="stat-value">{{ stats.logins_today }}</div>
+        <div style="color: #666;">Authentication requests</div>
+    </div>
+    
+    <div class="stat-card online">
+        <div class="stat-label">🎮 Active Servers</div>
+        <div class="stat-value">{{ stats.online_servers }}</div>
+        <div style="color: #666;">Game servers hosting</div>
+    </div>
+    
+    <div class="stat-card bans">
+        <div class="stat-label">⛔ Banned</div>
+        <div class="stat-value">{{ stats.total_bans }}</div>
+        <div style="color: #666;">Disabled consoles</div>
+    </div>
+</div>
+
+<!-- Platform Distribution -->
+<div class="data-table">
+    <h3>📊 Consoles by Platform</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Platform</th>
+                <th>Count</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stats.consoles_by_platform %}
+            <tr>
+                <td>
+                    <span class="platform-badge platform-{{ item.platform }}">
+                        {{ item.platform }}
+                    </span>
+                </td>
+                <td><strong>{{ item.count }}</strong></td>
+                <td>{{ item.percentage }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Top Games -->
+<div class="data-table">
+    <h3>🎲 Most Popular Games</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Game ID</th>
+                <th>Profiles</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for game in stats.top_games %}
+            <tr>
+                <td><code>{{ game.game_id }}</code></td>
+                <td><strong>{{ game.count }}</strong></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2" style="text-align: center; color: #999;">No games yet</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Active Game Servers -->
+<div class="data-table">
+    <h3>🎮 Active Game Servers</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Game</th>
+                <th>Host</th>
+                <th>Players</th>
+                <th>Address</th>
+                <th>Last Heartbeat</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for server in stats.active_servers %}
+            <tr>
+                <td><strong>{{ server.game_name }}</strong></td>
+                <td>{{ server.host_profile.console.device_name }}</td>
+                <td>{{ server.current_players }}/{{ server.max_players }}</td>
+                <td><code>{{ server.ip_address }}:{{ server.port }}</code></td>
+                <td class="status-online">{{ server.last_heartbeat|timesince }} ago</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #999;">No active servers</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Recent Consoles -->
+<div class="data-table">
+    <h3>📱 Recently Active Consoles</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Device</th>
+                <th>Platform</th>
+                <th>MAC Address</th>
+                <th>Last Seen</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for console in stats.recent_consoles %}
+            <tr>
+                <td><strong>{{ console.device_name|default:"Unnamed" }}</strong></td>
+                <td>
+                    <span class="platform-badge platform-{{ console.platform }}">
+                        {{ console.platform }}
+                    </span>
+                </td>
+                <td><code>{{ console.mac_address }}</code></td>
+                <td>
+                    {% if console.last_seen|timesince|slice:":1" == "0" %}
+                        <span class="status-online">Just now</span>
+                    {% else %}
+                        {{ console.last_seen|timesince }} ago
+                    {% endif %}
+                </td>
+                <td>
+                    {% if console.enabled %}
+                        <span style="color: green;">✓ Enabled</span>
+                    {% else %}
+                        <span style="color: red;">✗ Disabled</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Recent NAS Logins -->
+<div class="data-table">
+    <h3>🔐 Recent NAS Logins</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>IP Address</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for login in stats.recent_nas_logins %}
+            <tr>
+                <td><code>{{ login.user_id }}</code></td>
+                <td>{{ login.ip_address }}</td>
+                <td>{{ login.timestamp|timesince }} ago</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p style="text-align: center; color: #999; margin-top: 40px;">
+    Last updated: {{ now|date:"Y-m-d H:i:s" }}
+</p>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+# Django Admin Requirements
+-r base.txt
+
+# Django & REST Framework
+django==5.0.1
+djangorestframework==3.14.0
+django-filter==23.5
+django-cors-headers==4.3.1
+whitenoise==6.6.0
+
+# WSGI Server
+gunicorn==21.2.0
+
+# Database drivers
+mysqlclient==2.2.1
