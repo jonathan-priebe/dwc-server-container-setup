@@ -177,44 +177,67 @@ Example: Profile 88 + ADAJ = `3693-6718-7544`
 
 ### Quick Start
 
-**Clone the repository & Configure environment**
+**Clone the repository**
 ```bash
-# Clone repository
 git clone --recurse-submodules https://github.com/jonathan-priebe/dwc-server-container-setup.git
 cd dwc-server-container-setup
+```
 
-# Create environment file
+**Configure environment**
+```bash
+# Copy and configure environment
 cp .env.example .env
 
 # Generate required keys
 SECRET_KEY=$(openssl rand -base64 50)
 NAS_API_TOKEN=$(openssl rand -hex 20)
 
-# Edit .env with your values
+# Edit .env with your values (set SECRET_KEY and NAS_API_TOKEN)
 nano .env
-
-# Copy and edit DNS configuration
-cp dnsmasq/wfc.example dnsmasq/wfc.conf
-nano dnsmasq/wfc.conf
 ```
 
-**Option A: Basic Setup (SQLite)**
+**Choose your deployment method:**
 
-For basic Wi-Fi functionality without Pokemon GTS:
+#### Simple Start (Root docker-compose.yml)
+
+Fastest way to get started - uses the root `docker-compose.yml`:
 
 ```bash
+# SQLite (basic Wi-Fi functionality):
 docker compose up -d
-```
 
-**Option B: Full Setup with GTS (MariaDB)**
-
-For complete functionality including Pokemon trading:
-
-```bash
+# OR MariaDB + GTS (full features including Pokemon trading):
 docker compose --profile mariadb up -d
 ```
 
-> **Note**: MariaDB 10.5 is required for GTS compatibility with Mono/.NET.
+#### Advanced Deployment (docker-compose-examples/)
+
+For production with pre-built GHCR images or custom configurations:
+
+| Configuration | Description | Best For |
+|--------------|-------------|----------|
+| **docker-compose.ghcr.yml** | Production with GHCR images (SQLite) | Quick production deployment |
+| **docker-compose.ghcr-mariadb.yml** | Production with GHCR + MariaDB + GTS | Full production with Pokemon GTS |
+| **docker-compose.dev.yml** | Local development builds | Development & testing |
+
+```bash
+cd docker-compose-examples
+cp .env.example .env  # Configure if different from root .env
+nano .env
+
+# Production with pre-built images (SQLite):
+docker compose -f docker-compose.ghcr.yml up -d
+
+# Production with pre-built images (MariaDB + GTS):
+docker compose -f docker-compose.ghcr-mariadb.yml up -d
+```
+
+> **For detailed configuration options and examples, see [docker-compose-examples/README.md](docker-compose-examples/README.md)**
+
+> **Note**:
+> - Root `docker-compose.yml` builds locally - best for getting started quickly
+> - GHCR images (`docker-compose-examples/*.ghcr.yml`) are pre-built - faster for production
+> - MariaDB 10.5 is required for GTS compatibility with Mono/.NET
 
 ### DNS Configuration
 
@@ -222,18 +245,23 @@ Point Nintendo domains to your server IP:
 
 **Option 1: dnsmasq (included)**
 
-The built-in dnsmasq container handles DNS automatically. Configure your DS to use your server's IP as DNS server.
+The built-in dnsmasq container handles DNS automatically:
+
+1. Edit `dnsmasq/wfc.conf` and replace `192.168.1.100` with your server's IP
+2. Configure your Nintendo DS to use your server's IP as DNS server (in DS Wi-Fi settings)
+
+The dnsmasq container is already configured in all docker-compose files.
 
 **Option 2: Router/Custom DNS**
 
-Add these entries pointing to your server:
+Add these DNS entries in your router pointing to your server:
 
 ```
 *.nintendowifi.net → YOUR_SERVER_IP
 *.gamespy.com → YOUR_SERVER_IP
 ```
 
-Example dnsmasq.conf:
+Example router DNS override:
 ```
 address=/nintendowifi.net/192.168.1.100
 address=/gamespy.com/192.168.1.100
@@ -353,10 +381,16 @@ The NAS_API_TOKEN is automatically registered in Django when the admin container
 
 2. Or create manually:
    ```bash
+   # Using root docker-compose.yml:
    docker compose exec admin python manage.py createsuperuser
+
+   # Using docker-compose-examples:
+   docker compose -f docker-compose.ghcr.yml exec admin python manage.py createsuperuser
    ```
 
 ### Managing Services
+
+**Using root docker-compose.yml:**
 
 ```bash
 # View all containers
@@ -366,11 +400,11 @@ docker compose ps
 docker compose logs -f
 
 # View specific service logs
-docker compose logs -f dwc-gamespy
-docker compose logs -f dwc-gts
+docker compose logs -f gamespy
+docker compose --profile mariadb logs -f gts
 
 # Restart a service
-docker compose restart dwc-admin
+docker compose restart admin
 
 # Stop all services
 docker compose down
@@ -378,6 +412,30 @@ docker compose down
 # Stop and remove volumes (full reset)
 docker compose down -v
 ```
+
+**Using docker-compose-examples:**
+
+```bash
+cd docker-compose-examples
+
+# View all containers
+docker compose -f docker-compose.ghcr.yml ps
+
+# View logs (all services)
+docker compose -f docker-compose.ghcr.yml logs -f
+
+# View specific service logs
+docker compose -f docker-compose.ghcr.yml logs -f gamespy
+docker compose -f docker-compose.ghcr-mariadb.yml logs -f gts
+
+# Restart a service
+docker compose -f docker-compose.ghcr.yml restart admin
+
+# Stop all services
+docker compose -f docker-compose.ghcr.yml down
+```
+
+> **Tip**: Replace `docker-compose.ghcr.yml` with your chosen configuration file
 
 ### API Access
 
@@ -416,18 +474,36 @@ See [API Documentation](docs/API_DOCUMENTATION.md) for full details.
 
 The Global Trade Station allows Pokemon trading between players.
 
-**Important**: GTS requires the MariaDB profile and cannot run with SQLite.
+**Important**: GTS requires MariaDB and cannot run with SQLite.
 
 ### Enable GTS
 
+**Using root docker-compose.yml:**
+
 ```bash
 docker compose --profile mariadb up -d
+```
+
+**Using docker-compose-examples (GHCR Images - Production):**
+
+```bash
+cd docker-compose-examples
+docker compose -f docker-compose.ghcr-mariadb.yml up -d
+```
+
+**Using docker-compose-examples (Local Builds - Development):**
+
+```bash
+cd docker-compose-examples
+docker compose -f docker-compose.dev.yml --profile mariadb up -d
 ```
 
 The GTS server will automatically:
 1. Create the GTS database and user
 2. Import the Pokemon database schema (721 Pokemon, 639 moves)
 3. Start the Mono/.NET GTS application
+
+> See [docker-compose-examples/README.md](docker-compose-examples/README.md) for detailed GTS configuration options.
 
 ### Supported Pokemon Games
 
@@ -582,9 +658,11 @@ dwc-server-python3/
 
 ## Documentation
 
-- [Docker Setup Guide](docs/DOCKER_GUIDE.md)
-- [GameSpy Protocol Reference](docs/GAMESPY_RESOURCES_AND_GOAL_TRACKER.md)
-- [API Documentation](docs/API_DOCUMENTATION.md)
+- **[Docker Compose Examples](docker-compose-examples/README.md)** - Deployment configurations (GHCR, MariaDB, Development)
+- **[GitHub Actions Workflows](.github/workflows/README.md)** - CI/CD, GHCR deployment, PR testing
+- [Docker Setup Guide](docs/DOCKER_GUIDE.md) - Detailed Docker configuration
+- [GameSpy Protocol Reference](docs/GAMESPY_RESOURCES_AND_GOAL_TRACKER.md) - Protocol implementation details
+- [API Documentation](docs/API_DOCUMENTATION.md) - REST API reference
 
 ## Legal Notice / Disclaimer
 
@@ -625,4 +703,3 @@ This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) 
 For issues and contributions, please visit: [GitHub Repository](https://github.com/jonathan-priebe/pkmn-wfc-server-docker-setup)
 
 - 📫 Reach me via GitHub or [LinkedIn](https://www.linkedin.com/in/jonathan-p-34471b1a5/)
-

@@ -3,7 +3,7 @@ services:
   # Note: With mariadb profile, Apache will proxy to GTS; without it, gamestats2 will be unavailable
   apache:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.apache-sslv3
     container_name: dwc-apache
     restart: unless-stopped
@@ -27,7 +27,7 @@ services:
     image: strm/dnsmasq
     restart: always
     volumes:
-      - ./dnsmasq/wfc.conf:/etc/dnsmasq.d/wfc.conf
+      - ../dnsmasq/wfc.conf:/etc/dnsmasq.d/wfc.conf
     ports:
       - "53:53/tcp"
       - "53:53/udp"
@@ -65,14 +65,14 @@ services:
   # Django Admin Panel
   admin:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.admin
     container_name: dwc-admin
     restart: unless-stopped
     ports:
       - "7999:7999"
     expose:
-      - "7999" 
+      - "7999"
     environment:
       - DATABASE_ENGINE=${DATABASE_ENGINE:-sqlite}
       - DATABASE_NAME=${DATABASE_NAME:-/app/data/dwc_server.db}
@@ -102,17 +102,11 @@ services:
         required: false
     networks:
       - dwc-network
-    #healthcheck:
-    #  test: ["CMD", "curl", "-f", "http://localhost:7999/api/"]
-    #  interval: 30s
-    #  timeout: 10s
-    #  retries: 3
-    #  start_period: 40s
 
   # GameSpy Servers (NAS, GP, QR)
   gamespy:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.gamespy
     container_name: dwc-gamespy
     restart: unless-stopped
@@ -144,17 +138,11 @@ services:
       - admin
     networks:
       - dwc-network
-    #healthcheck:
-    #  test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 29900), timeout=5)"]
-    #  interval: 30s
-    #  timeout: 10s
-    #  retries: 3
-    #  start_period: 10s
 
   # GTS Server (Pokemon Global Trade Station)
   gts:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.gts
       args:
         - GTS_DB_NAME=${GTS_DB_NAME:-gts}

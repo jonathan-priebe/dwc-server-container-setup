@@ -1,10 +1,8 @@
 services:
   # Apache Proxy - Routes Nintendo domains to backend services
-  # Note: With mariadb profile, Apache will proxy to GTS; without it, gamestats2 will be unavailable
+  # With MariaDB profile, Apache will proxy to GTS
   apache:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.apache-sslv3
+    image: ghcr.io/jonathan-priebe/dwc-server-apache:latest
     container_name: dwc-apache
     restart: unless-stopped
     ports:
@@ -17,7 +15,6 @@ services:
         condition: service_started
       gts:
         condition: service_started
-        required: false
     networks:
       - dwc-network
 
@@ -27,7 +24,7 @@ services:
     image: strm/dnsmasq
     restart: always
     volumes:
-      - ./dnsmasq/wfc.conf:/etc/dnsmasq.d/wfc.conf
+      - ../dnsmasq/wfc.conf:/etc/dnsmasq.d/wfc.conf
     ports:
       - "53:53/tcp"
       - "53:53/udp"
@@ -36,7 +33,7 @@ services:
     networks:
       - dwc-network
 
-  # MariaDB Database (optional - use SQLite if not needed)
+  # MariaDB Database
   # Note: Using MariaDB 10.5 for compatibility with Mono/.NET MySQL connector
   mariadb:
     image: mariadb:10.5
@@ -59,23 +56,19 @@ services:
       retries: 5
     networks:
       - dwc-network
-    profiles:
-      - mariadb  # Only start if explicitly requested
 
   # Django Admin Panel
   admin:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.admin
+    image: ghcr.io/jonathan-priebe/dwc-server-admin:latest
     container_name: dwc-admin
     restart: unless-stopped
     ports:
       - "7999:7999"
     expose:
-      - "7999" 
+      - "7999"
     environment:
-      - DATABASE_ENGINE=${DATABASE_ENGINE:-sqlite}
-      - DATABASE_NAME=${DATABASE_NAME:-/app/data/dwc_server.db}
+      - DATABASE_ENGINE=${DATABASE_ENGINE:-mariadb}
+      - DATABASE_NAME=${DATABASE_NAME:-dwc_server}
       - DATABASE_USER=${DATABASE_USER:-dwc}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD:-changeme}
       - DATABASE_HOST=${DATABASE_HOST:-mariadb}
@@ -93,27 +86,18 @@ services:
       # API Token for GameSpy server
       - NAS_API_TOKEN=${NAS_API_TOKEN:-}
     volumes:
-      - ./data:/app/data  # Shared with gamespy for SQLite
+      - ./data:/app/data
       - ./logs:/app/logs
       - static-files:/app/admin_panel/staticfiles
     depends_on:
       mariadb:
         condition: service_healthy
-        required: false
     networks:
       - dwc-network
-    #healthcheck:
-    #  test: ["CMD", "curl", "-f", "http://localhost:7999/api/"]
-    #  interval: 30s
-    #  timeout: 10s
-    #  retries: 3
-    #  start_period: 40s
 
   # GameSpy Servers (NAS, GP, QR)
   gamespy:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.gamespy
+    image: ghcr.io/jonathan-priebe/dwc-server-gamespy:latest
     container_name: dwc-gamespy
     restart: unless-stopped
     expose:
@@ -138,29 +122,16 @@ services:
       - NAS_API_TOKEN=${NAS_API_TOKEN:-}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
-      - ./data:/app/data  # Shared with admin for SQLite
+      - ./data:/app/data
       - ./logs:/app/logs
     depends_on:
       - admin
     networks:
       - dwc-network
-    #healthcheck:
-    #  test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 29900), timeout=5)"]
-    #  interval: 30s
-    #  timeout: 10s
-    #  retries: 3
-    #  start_period: 10s
 
   # GTS Server (Pokemon Global Trade Station)
   gts:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.gts
-      args:
-        - GTS_DB_NAME=${GTS_DB_NAME:-gts}
-        - GTS_DB_USER=${GTS_DB_USER:-gts}
-        - GTS_DB_PASSWORD=${GTS_DB_PASSWORD:-gts}
-        - MARIADB_HOST=dwc-mariadb
+    image: ghcr.io/jonathan-priebe/dwc-server-gts:latest
     container_name: dwc-gts
     restart: unless-stopped
     expose:
@@ -176,8 +147,6 @@ services:
         condition: service_healthy
     networks:
       - dwc-network
-    profiles:
-      - mariadb  # GTS requires MariaDB
 
 volumes:
   mariadb-data:
