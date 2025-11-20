@@ -1,0 +1,162 @@
+# Multi-stage build for Apache with OpenSSL 1.1.1m (SSLv3 support)
+# Based on jonathan-priebe/pkmn-wfc-server-docker-setup
+
+ARG VERSION_OPENSSL="1.1.1m"
+ARG VERSION_HTTPD="2.4.52"
+
+###
+### Stage 1: Build OpenSSL with SSLv3 enabled
+###
+FROM debian:bullseye AS builder_openssl
+
+ARG VERSION_OPENSSL
+ARG VERSION_HTTPD
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    ca-certificates \
+    libapr1-dev \
+    libaprutil1-dev \
+    libpcre3-dev \
+    libexpat1-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Download and build OpenSSL with SSLv3 support
+RUN curl -L https://www.openssl.org/source/openssl-${VERSION_OPENSSL}.tar.gz -o openssl.tar.gz && \
+    tar xzf openssl.tar.gz && \
+    cd openssl-${VERSION_OPENSSL} && \
+    ./config \
+        --prefix=/usr/local/openssl \
+        --openssldir=/usr/local/openssl \
+        shared \
+        enable-ssl3 \
+        enable-ssl3-method \
+        enable-weak-ssl-ciphers && \
+    make -j$(nproc) && \
+    make install_sw && \
+    make install_ssldirs
+
+# Download and build Apache with custom OpenSSL
+RUN curl -L https://archive.apache.org/dist/httpd/httpd-${VERSION_HTTPD}.tar.bz2 -o httpd.tar.bz2 && \
+    tar xjf httpd.tar.bz2 && \
+    cd httpd-${VERSION_HTTPD} && \
+    echo "/usr/local/openssl/lib" > /etc/ld.so.conf.d/usr.local.openssl.lib.conf && \
+    ldconfig && \
+    ./configure \
+        --prefix=/usr/local/apache2 \
+        --enable-ssl \
+        --with-ssl=/usr/local/openssl \
+        --enable-so \
+        --enable-headers \
+        --enable-rewrite \
+        --enable-proxy \
+        --enable-proxy-http \
+        --enable-remoteip && \
+    make -j$(nproc) && \
+    make install
+
+###
+### Stage 2: Runtime image
+###
+FROM debian:bullseye-slim
+
+LABEL maintainer="DWC Server"
+LABEL description="Apache with SSLv3 for Nintendo DS/Wii"
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    libapr1 \
+    libaprutil1 \
+    libexpat1 \
+    libpcre3 \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy compiled OpenSSL and Apache from builder
+COPY --from=builder_openssl /usr/local/openssl /usr/local/openssl
+COPY --from=builder_openssl /usr/local/apache2 /usr/local/apache2
+
+# Setup library paths
+RUN echo "/usr/local/openssl/lib" > /etc/ld.so.conf.d/openssl.conf && \
+    echo "/usr/local/apache2/lib" > /etc/ld.so.conf.d/apache2.conf && \
+    ldconfig
+
+# Create SSL directory
+RUN mkdir -p /usr/local/apache2/conf/certs
+
+# Download and extract Nintendo certificates
+WORKDIR /tmp
+RUN curl https://larsenv.github.io/NintendoCerts/WII_NWC_1_CERT.p12 -LO && \
+    /usr/local/openssl/bin/openssl pkcs12 \
+        -in WII_NWC_1_CERT.p12 \
+        -passin pass:alpine \
+        -passout pass:alpine \
+        -out keys.txt && \
+    sed -n '7,29p' keys.txt > /usr/local/apache2/conf/certs/nwc.crt && \
+    sed -n '33,50p' keys.txt > nwc.key && \
+    /usr/local/openssl/bin/openssl genrsa -out /usr/local/apache2/conf/certs/server.key 1024 && \
+    printf "US\nWashington\nRedmond\nNintendo of America Inc.\nNintendo Wifi Network\n*.*.*\nca@noa.nintendo.com\n\n\n" | \
+    /usr/local/openssl/bin/openssl req \
+        -new \
+        -key /usr/local/apache2/conf/certs/server.key \
+        -out server.csr && \
+    /usr/local/openssl/bin/openssl x509 \
+        -req \
+        -in server.csr \
+        -CA /usr/local/apache2/conf/certs/nwc.crt \
+        -CAkey nwc.key \
+        -CAcreateserial \
+        -out /usr/local/apache2/conf/certs/server.crt \
+        -days 3650 \
+        -sha1 \
+        -passin pass:alpine && \
+    rm -f WII_NWC_1_CERT.p12 keys.txt nwc.key nwc.srl server.csr && \
+    chmod 600 /usr/local/apache2/conf/certs/server.key && \
+    chmod 644 /usr/local/apache2/conf/certs/server.crt /usr/local/apache2/conf/certs/nwc.crt
+
+# Verify SSLv3 is enabled
+RUN /usr/local/openssl/bin/openssl ciphers -v 'SSLv3' | head -5 || echo "SSLv3 check skipped"
+
+# Copy Apache configuration
+COPY apache-configs/*.conf /usr/local/apache2/conf/extra/
+
+# Configure Apache
+RUN cd /usr/local/apache2/conf && \
+    # Enable modules
+    sed -i 's/#LoadModule ssl_module/LoadModule ssl_module/' httpd.conf && \
+    sed -i 's/#LoadModule socache_shmcb_module/LoadModule socache_shmcb_module/' httpd.conf && \
+    sed -i 's/#LoadModule proxy_module/LoadModule proxy_module/' httpd.conf && \
+    sed -i 's/#LoadModule proxy_http_module/LoadModule proxy_http_module/' httpd.conf && \
+    sed -i 's/#LoadModule headers_module/LoadModule headers_module/' httpd.conf && \
+    sed -i 's/#LoadModule rewrite_module/LoadModule rewrite_module/' httpd.conf && \
+    sed -i 's/#LoadModule remoteip_module/LoadModule remoteip_module/' httpd.conf && \
+    # Add VirtualHost includes
+    echo "" >> httpd.conf && \
+    echo "# Nintendo WFC VirtualHosts" >> httpd.conf && \
+    echo "Include conf/extra/nas-naswii-conntest_nintendowifi_net.conf" >> httpd.conf && \
+    echo "Include conf/extra/nas_nintendowifi_net.conf" >> httpd.conf && \
+    echo "Include conf/extra/gamestats2_gs_nintendowifi_net.conf" >> httpd.conf && \
+    echo "Include conf/extra/dls1_nintendowifi_net.conf" >> httpd.conf && \
+    # Check and add Listen directives only if not present
+    grep -q "^Listen 80" httpd.conf || echo "Listen 80" >> httpd.conf && \
+    grep -q "^Listen 443" httpd.conf || echo "Listen 443" >> httpd.conf
+
+# Create log directory
+RUN mkdir -p /usr/local/apache2/logs
+
+WORKDIR /usr/local/apache2
+
+# Expose ports
+EXPOSE 80 443
+
+# Health check
+#HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+#    CMD curl -f http://localhost/ || exit 1
+
+# Start Apache in foreground
+CMD ["/usr/local/apache2/bin/httpd", "-D", "FOREGROUND"]

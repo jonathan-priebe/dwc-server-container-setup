@@ -1,0 +1,33 @@
+FROM debian:bullseye-slim
+
+RUN apt-get update && apt-get install -y \
+    nginx \
+    openssl \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# SSLv3 aktivieren (unsicher, nur für Legacy)
+RUN sed -i '/CipherString/s/@SECLEVEL=2/@SECLEVEL=0/' /etc/ssl/openssl.cnf && \
+    sed -i 's/^MinProtocol = TLSv1.2/MinProtocol = SSLv3/' /etc/ssl/openssl.cnf || true
+
+# Zertifikate wie im Apache-Setup
+RUN mkdir -p /etc/nginx/certs
+WORKDIR /tmp
+RUN curl https://larsenv.github.io/NintendoCerts/WII_NWC_1_CERT.p12 -LO && \
+    openssl pkcs12 -in WII_NWC_1_CERT.p12 -passin pass:alpine -passout pass:alpine -out keys.txt && \
+    sed -n '7,29p' keys.txt > /etc/nginx/certs/nwc.crt && \
+    sed -n '33,50p' keys.txt > nwc.key && \
+    openssl genrsa -out /etc/nginx/certs/server.key 1024 && \
+    printf "US\nWashington\nRedmond\nNintendo of America Inc.\nNintendo Wifi Network\n*.*.*\nca@noa.nintendo.com\n\n\n" | \
+    openssl req -new -key /etc/nginx/certs/server.key -out server.csr && \
+    openssl x509 -req -in server.csr -CA /etc/nginx/certs/nwc.crt -CAkey nwc.key \
+    -CAcreateserial -out /etc/nginx/certs/server.crt -days 3650 -sha1 -passin pass:alpine && \
+    rm -f WII_NWC_1_CERT.p12 keys.txt nwc.key nwc.srl server.csr && \
+    chmod 600 /etc/nginx/certs/server.key && \
+    chmod 644 /etc/nginx/certs/server.crt /etc/nginx/certs/nwc.crt
+RUN ls
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80 443
+CMD ["nginx", "-g", "daemon off;"]

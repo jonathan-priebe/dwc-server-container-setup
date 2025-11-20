@@ -1,0 +1,41 @@
+# Dockerfile for DWC Django Admin Panel
+FROM python:3.11-slim
+
+LABEL maintainer="DWC Server"
+LABEL description="DWC Admin Panel and REST API"
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements/base.txt base.txt
+COPY requirements/admin.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application
+COPY admin_panel/ ./admin_panel/
+COPY dwc_server/utils/friendcode.py ./admin_panel/dwc_admin/friendcode.py
+COPY .env .env
+
+# Copy entrypoint script
+COPY docker/entrypoints/entrypoint.admin.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/admin_panel/static /app/admin_panel/staticfiles
+
+# Set working directory
+WORKDIR /app/admin_panel
+
+# Expose port
+EXPOSE 7999
+
+# Entrypoint
+ENTRYPOINT ["/entrypoint.sh"]

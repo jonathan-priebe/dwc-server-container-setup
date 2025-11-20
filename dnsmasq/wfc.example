@@ -1,0 +1,5 @@
+# Core WFC domains redirected to your server
+address=/nintendowifi.net/YOUR_IP
+
+# GameSpy domain for GP/QR servers
+address=/gamespy.com/YOUR_IP

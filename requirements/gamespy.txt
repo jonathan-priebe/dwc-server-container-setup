@@ -1,0 +1,8 @@
+# GameSpy Server Requirements
+-r base.txt
+
+# Async HTTP
+aiohttp==3.9.1
+
+# Crypto
+cryptography==41.0.7

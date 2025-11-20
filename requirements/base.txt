@@ -1,0 +1,4 @@
+# Base requirements (shared between GameSpy and Admin)
+python-dotenv==1.0.0
+pyyaml==6.0.1
+structlog==24.1.0

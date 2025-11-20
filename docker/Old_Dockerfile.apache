@@ -1,0 +1,76 @@
+# Apache with mod_mono and Nintendo SSL certificates
+# Use this version ONLY if you need C#/.NET GameStats server
+FROM debian:bullseye-slim
+
+LABEL maintainer="DWC Server"
+LABEL description="Apache2 with mod_mono for Nintendo WFC"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Apache, mod_mono, and dependencies
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    libapache2-mod-mono \
+    mono-xsp4 \
+    openssl \
+    curl \
+    sed \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable Apache modules
+RUN a2enmod ssl \
+    proxy \
+    proxy_http \
+    headers \
+    rewrite 
+    #mono
+
+RUN echo "ServerName localhost" >> /etc/apache2/conf-available/servername.conf && \
+    a2enconf servername
+
+RUN sed -i '/CipherString = DEFAULT@SECLEVEL=2/s/DEFAULT@SECLEVEL=2/DEFAULT@SECLEVEL=0/' /etc/ssl/openssl.cnf && \
+    sed -i 's/^MinProtocol = TLSv1.2/MinProtocol = TLSv1/' /etc/ssl/openssl.cnf
+
+# Create SSL directory
+RUN mkdir -p /etc/apache2/certs
+
+# Download and extract Nintendo certificates
+WORKDIR /tmp
+RUN curl https://larsenv.github.io/NintendoCerts/WII_NWC_1_CERT.p12 -LO && \
+    openssl pkcs12 -in WII_NWC_1_CERT.p12 -passin pass:alpine -passout pass:alpine -out keys.txt && \
+    sed -n '7,29p' keys.txt > /etc/apache2/certs/nwc.crt && \
+    sed -n '33,50p' keys.txt > nwc.key && \
+    openssl genrsa -out /etc/apache2/certs/server.key 1024 && \
+    printf "US\nWashington\nRedmond\nNintendo of America Inc.\nNintendo Wifi Network\n*.*.*\nca@noa.nintendo.com\n\n\n" | \
+    openssl req -new -key /etc/apache2/certs/server.key -out server.csr && \
+    openssl x509 -req -in server.csr -CA /etc/apache2/certs/nwc.crt -CAkey nwc.key \
+    -CAcreateserial -out /etc/apache2/certs/server.crt -days 3650 -sha1 -passin pass:alpine && \
+    rm -f WII_NWC_1_CERT.p12 keys.txt nwc.key nwc.srl server.csr && \
+    chmod 600 /etc/apache2/certs/server.key && \
+    chmod 644 /etc/apache2/certs/server.crt /etc/apache2/certs/nwc.crt
+
+# Copy Apache site configurations
+COPY apache-configs/*.conf /etc/apache2/sites-available/
+
+# Disable default site
+RUN a2dissite 000-default.conf default-ssl.conf || true
+
+# Enable Nintendo WFC sites
+RUN a2ensite nas-naswii-conntest_nintendowifi_net.conf \
+    nas_nintendowifi_net.conf \
+    gamestats2_gs_nintendowifi_net.conf \
+    dls1_nintendowifi_net.conf
+
+# Configure ports - add Listen 443 only if not already present
+RUN grep -q "Listen 443" /etc/apache2/ports.conf || echo "Listen 443" >> /etc/apache2/ports.conf
+
+# Expose ports
+EXPOSE 80 443
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost/ || exit 1
+
+# Start Apache in foreground
+CMD ["apache2ctl", "-D", "FOREGROUND"]
