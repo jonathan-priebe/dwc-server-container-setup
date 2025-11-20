@@ -1,0 +1,250 @@
+name: Build and Push to GHCR
+
+on:
+  # Automatic trigger on version tags
+  push:
+    branches: [main] 
+    tags:
+      - 'v*.*.*'
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      build_all:
+        description: 'Build all images'
+        required: false
+        type: boolean
+        default: true
+      build_apache:
+        description: 'Build Apache image'
+        required: false
+        type: boolean
+        default: false
+      build_admin:
+        description: 'Build Admin image'
+        required: false
+        type: boolean
+        default: false
+      build_gamespy:
+        description: 'Build GameSpy image'
+        required: false
+        type: boolean
+        default: false
+      build_gts:
+        description: 'Build GTS image'
+        required: false
+        type: boolean
+        default: false
+      tag:
+        description: 'Image tag (default: latest)'
+        required: false
+        type: string
+        default: 'latest'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/dwc-server
+
+jobs:
+  build-apache:
+    if: ${{ github.event_name == 'push' || github.event.inputs.build_all == 'true' || github.event.inputs.build_apache == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-apache
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=${{ github.event.inputs.tag || 'latest' }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
+            type=sha,prefix=
+
+      - name: Build and push Apache image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.apache-sslv3
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-admin:
+    if: ${{ github.event_name == 'push' || github.event.inputs.build_all == 'true' || github.event.inputs.build_admin == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-admin
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=${{ github.event.inputs.tag || 'latest' }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
+            type=sha,prefix=
+
+      - name: Build and push Admin image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.admin
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-gamespy:
+    if: ${{ github.event_name == 'push' || github.event.inputs.build_all == 'true' || github.event.inputs.build_gamespy == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-gamespy
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=${{ github.event.inputs.tag || 'latest' }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
+            type=sha,prefix=
+
+      - name: Build and push GameSpy image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.gamespy
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-gts:
+    if: ${{ github.event_name == 'push' || github.event.inputs.build_all == 'true' || github.event.inputs.build_gts == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-gts
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=${{ github.event.inputs.tag || 'latest' }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
+            type=sha,prefix=
+
+      - name: Build and push GTS image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.gts
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  summary:
+    needs: [build-apache, build-admin, build-gamespy, build-gts]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Apache | ${{ needs.build-apache.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Admin | ${{ needs.build-admin.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| GameSpy | ${{ needs.build-gamespy.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| GTS | ${{ needs.build-gts.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Images pushed to:" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/${{ github.repository_owner }}/dwc-server-apache:${{ github.event.inputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/${{ github.repository_owner }}/dwc-server-admin:${{ github.event.inputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/${{ github.repository_owner }}/dwc-server-gamespy:${{ github.event.inputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/${{ github.repository_owner }}/dwc-server-gts:${{ github.event.inputs.tag }}\`" >> $GITHUB_STEP_SUMMARY

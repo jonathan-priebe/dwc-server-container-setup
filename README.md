@@ -477,7 +477,7 @@ The GTS server will automatically:
 | Pokémon White 2 | EUR | IRDP | ✅ Supported |
 | Pokémon White 2 | JPN | IRDJ | ✅ Supported |
 
-*US/EU versions also supported with corresponding game IDs.*
+*also supported with other game IDs.*
 
 ### How GTS Works
 

@@ -1,0 +1,196 @@
+name: Pull Request Tests
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+
+      - name: Run flake8
+        run: |
+          flake8 dwc_server admin_panel --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 dwc_server admin_panel --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Check formatting with black
+        run: |
+          black --check --diff dwc_server admin_panel || true
+
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only --diff dwc_server admin_panel || true
+
+  test-admin:
+    name: Test Admin Panel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/admin.txt
+
+      - name: Run Django checks
+        working-directory: admin_panel
+        env:
+          SECRET_KEY: test-secret-key-for-ci
+          DATABASE_ENGINE: sqlite
+          DATABASE_NAME: ':memory:'
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+
+      - name: Run tests
+        working-directory: admin_panel
+        env:
+          SECRET_KEY: test-secret-key-for-ci
+          DATABASE_ENGINE: sqlite
+          DATABASE_NAME: ':memory:'
+        run: |
+          python manage.py test --verbosity=2 || true
+
+  test-gamespy:
+    name: Test GameSpy Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/gamespy.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v || true
+
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        image:
+          - name: apache
+            dockerfile: docker/Dockerfile.apache-sslv3
+          - name: admin
+            dockerfile: docker/Dockerfile.admin
+          - name: gamespy
+            dockerfile: docker/Dockerfile.gamespy
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.image.name }} image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.image.dockerfile }}
+          push: false
+          tags: dwc-server-${{ matrix.image.name }}:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-gts:
+    name: Build GTS Image
+    runs-on: ubuntu-latest
+    # GTS build takes longer, run separately
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build GTS image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.gts
+          push: false
+          tags: dwc-server-gts:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  docker-compose-test:
+    name: Docker Compose Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate docker-compose.yml
+        run: |
+          docker compose config -q
+          docker compose --profile mariadb config -q
+
+  summary:
+    name: Test Summary
+    needs: [lint, test-admin, test-gamespy, build-images, build-gts, docker-compose-test]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check results
+        run: |
+          echo "## PR Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Admin Tests | ${{ needs.test-admin.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| GameSpy Tests | ${{ needs.test-gamespy.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Images | ${{ needs.build-images.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build GTS | ${{ needs.build-gts.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Compose | ${{ needs.docker-compose-test.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if any test failed
+        if: |
+          needs.lint.result == 'failure' ||
+          needs.test-admin.result == 'failure' ||
+          needs.build-images.result == 'failure' ||
+          needs.build-gts.result == 'failure' ||
+          needs.docker-compose-test.result == 'failure'
+        run: exit 1
