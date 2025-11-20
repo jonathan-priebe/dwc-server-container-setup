@@ -180,8 +180,8 @@ Example: Profile 88 + ADAJ = `3693-6718-7544`
 **Clone the repository & Configure environment**
 ```bash
 # Clone repository
-git clone https://github.com/your-repo/dwc-server-python3.git
-cd dwc-server-python3
+git clone --recurse-submodules https://github.com/jonathan-priebe/dwc-server-container-setup.git
+cd dwc-server-container-setup
 
 # Create environment file
 cp .env.example .env
