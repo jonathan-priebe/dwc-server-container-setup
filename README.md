@@ -531,7 +531,7 @@ docker compose logs dwc-gamespy | grep -i 401
 
 ### GTS Connection Aborted
 
-**Problem**: "Verbindung zur GTS wurde abgebrochen"
+**Problem**: "Failed to Connect to the GTS"
 
 **Debug**:
 ```bash
