@@ -1,0 +1,103 @@
+services:
+  # Apache Proxy - Routes Nintendo domains to backend services
+  apache:
+    image: ghcr.io/jonathan-priebe/dwc-server-apache:latest
+    container_name: dwc-apache
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./logs/apache:/usr/local/apache2/logs
+    depends_on:
+      - gamespy
+    networks:
+      - dwc-network
+
+  # DNS Server for Nintendo domains
+  dnsmasq:
+    container_name: dnsmasq
+    image: strm/dnsmasq
+    restart: always
+    volumes:
+      - ../dnsmasq/wfc.conf:/etc/dnsmasq.d/wfc.conf
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - dwc-network
+
+  # Django Admin Panel
+  admin:
+    image: ghcr.io/jonathan-priebe/dwc-server-admin:latest
+    container_name: dwc-admin
+    restart: unless-stopped
+    ports:
+      - "7999:7999"
+    expose:
+      - "7999"
+    environment:
+      - DATABASE_ENGINE=${DATABASE_ENGINE:-sqlite}
+      - DATABASE_NAME=${DATABASE_NAME:-/app/data/dwc_server.db}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-*}
+      - DJANGO_PORT=${DJANGO_PORT:-7999}
+      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-2}
+      - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
+      # Superuser auto-creation (optional)
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME:-}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-}
+      # API Token for GameSpy server
+      - NAS_API_TOKEN=${NAS_API_TOKEN:-}
+    volumes:
+      - ./data:/app/data  # Shared with gamespy for SQLite
+      - ./logs:/app/logs
+      - static-files:/app/admin_panel/staticfiles
+    networks:
+      - dwc-network
+
+  # GameSpy Servers (NAS, GP, QR)
+  gamespy:
+    image: ghcr.io/jonathan-priebe/dwc-server-gamespy:latest
+    container_name: dwc-gamespy
+    restart: unless-stopped
+    expose:
+      - "8080"   # NAS (internal only, apache/nginx proxies)
+      - "9003"   # DLS1
+      - "8000"   # Storage
+    ports:
+      - "29900:29900"    # GP (TCP) - direct access
+      - "27900:27900/udp" # QR (UDP) - direct access
+      - "9003:9003"
+      - "8000:8000"
+    environment:
+      - NAS_HOST=0.0.0.0
+      - NAS_PORT=8080
+      - GP_HOST=0.0.0.0
+      - GP_PORT=29900
+      - QR_HOST=0.0.0.0
+      - QR_PORT=27900
+      - DLS1_HOST=0.0.0.0
+      - DLS1_PORT=9003
+      - API_BASE_URL=${API_BASE_URL:-http://admin:7999/api}
+      - NAS_API_TOKEN=${NAS_API_TOKEN:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./data:/app/data  # Shared with admin for SQLite
+      - ./logs:/app/logs
+    depends_on:
+      - admin
+    networks:
+      - dwc-network
+
+volumes:
+  static-files:
+    driver: local
+
+networks:
+  dwc-network:
+    driver: bridge
