@@ -19,7 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application
 COPY dwc_server/ ./dwc_server/
-COPY .env .env
+
+# Copy entrypoint script
+COPY docker/entrypoints/entrypoint.gamespy.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Create data and logs directories
 RUN mkdir -p /app/data /app/logs
@@ -31,5 +34,5 @@ EXPOSE 8080 29900 27900/udp
 #HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 #    CMD python -c "import socket; socket.create_connection(('localhost', 29900), timeout=5)" || exit 1
 
-# Run server
-CMD ["python", "-m", "dwc_server.main"]
+# Entrypoint
+ENTRYPOINT ["/entrypoint.sh"]

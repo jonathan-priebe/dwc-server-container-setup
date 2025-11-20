@@ -22,7 +22,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application
 COPY admin_panel/ ./admin_panel/
 COPY dwc_server/utils/friendcode.py ./admin_panel/dwc_admin/friendcode.py
-COPY .env .env
 
 # Copy entrypoint script
 COPY docker/entrypoints/entrypoint.admin.sh /entrypoint.sh
