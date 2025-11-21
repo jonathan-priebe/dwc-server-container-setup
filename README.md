@@ -24,8 +24,19 @@ A Docker-based setup for hosting a custom Nintendo Wi-Fi Connection (WFC) server
 - [Usage](#usage)
   - [Nintendo DS Setup](#nintendo-ds-setup)
   - [Admin Panel](#admin-panel)
+    - [First-time Setup](#first-time-setup)
+    - [Admin Panel Sections](#admin-panel-sections)
+    - [Working with the Admin Panel](#working-with-the-admin-panel)
+    - [Quick Tips](#quick-tips)
   - [Managing Services](#managing-services)
   - [API Access](#api-access)
+- [Mystery Gifts (DLS1 Distribution)](#mystery-gifts-dls1-distribution)
+  - [Features](#features-1)
+  - [Setup Mystery Gifts](#setup-mystery-gifts)
+  - [Supported Pokemon Games](#supported-pokemon-games)
+  - [How Mystery Gifts Work](#how-mystery-gifts-work)
+  - [Distribution Modes](#distribution-modes)
+  - [Managing Mystery Gifts](#managing-mystery-gifts)
 - [GTS (Pokemon Trading)](#gts-pokemon-trading)
   - [Enable GTS](#enable-gts)
   - [Supported Pokemon Games](#supported-pokemon-games)
@@ -45,6 +56,7 @@ A Docker-based setup for hosting a custom Nintendo Wi-Fi Connection (WFC) server
 
 - **GameSpy Protocol**: Full implementation of GP, QR2, GPCM protocols
 - **NAS Emulation**: Nintendo Authentication Server with challenge-response
+- **Mystery Gifts**: DLS1 server for Pokemon Mystery Gift distribution (Gen 4/5)
 - **GTS Support**: Pokemon Global Trade Station for Gen 4/5 games
 - **Django Admin**: Web-based management interface
 - **REST API**: Programmatic access to all data
@@ -109,6 +121,7 @@ A Docker-based setup for hosting a custom Nintendo Wi-Fi Connection (WFC) server
 | 7999 | HTTP | Django | Admin panel & API |
 | 8080 | HTTP | NAS | Internal - Nintendo auth |
 | 9002 | HTTP | GTS | Internal - Pokemon trading |
+| 9003 | HTTP | DLS1 | Internal - Mystery Gift downloads |
 | 27900 | UDP | QR | Server browser |
 | 29900 | TCP | GP | GameSpy presence |
 
@@ -352,7 +365,7 @@ The NAS_API_TOKEN is automatically registered in Django when the admin container
    - Secondary DNS: `8.8.8.8` (optional)
 
 2. **Supported Features:**
-   - ⚠️ Mystery Gifts / Wonder Cards - Coming soon
+   - ✅ Mystery Gifts / Wonder Cards (DLS1 - Gen 4/5 Pokemon)
    - ✅ GTS (Global Trade Station)
    - ✅ Battle Tower
    - ⚠️ Wi-Fi Plaza - Coming soon
@@ -363,14 +376,9 @@ The NAS_API_TOKEN is automatically registered in Django when the admin container
 
 **Access URL**: `http://your-server:7999/admin/`
 
-**Features**:
-- View and manage player profiles
-- Monitor active connections
-- Ban management (IP, MAC, Profile)
-- View friend codes and game sessions
-- Server statistics
+The Django Admin Panel is your central hub for managing the WFC server, player profiles, Mystery Gifts, and monitoring server activity.
 
-**First-time Setup**:
+#### First-time Setup
 
 1. Set admin credentials in `.env`:
    ```env
@@ -387,6 +395,106 @@ The NAS_API_TOKEN is automatically registered in Django when the admin container
    # Using docker-compose-examples:
    docker compose -f docker-compose.ghcr.yml exec admin python manage.py createsuperuser
    ```
+
+#### Admin Panel Sections
+
+**📱 Consoles**
+- View all registered Nintendo DS/Wii consoles
+- Enable/disable consoles (prevent specific devices from connecting)
+- See last connection time and status
+- Filter by platform (DS, DSi, Wii)
+- **Bulk Actions**: Enable/disable multiple consoles at once
+
+**👤 Profiles**
+- View all player profiles with friend codes
+- See which games each player owns
+- Enable/disable profiles
+- View GameSpy authentication data
+- Filter by game ID
+
+**🎮 Game Servers**
+- Monitor active game rooms (Mario Kart, etc.)
+- See server address, player count, and status
+- View which profile is hosting
+- Automatically cleaned up when servers go offline
+
+**🔐 Sessions**
+- View active GameSpy login sessions
+- See when players logged in
+- Sessions expire after 24 hours of inactivity
+
+**🎁 Mystery Gifts**
+- Import, enable/disable Mystery Gifts
+- Set priority and date ranges
+- **Quick Enable/Disable**: Check/uncheck directly in the table
+- **Bulk Actions**:
+  - Enable/disable selected gifts
+  - Enable/disable ALL gifts at once
+- Track download statistics
+- Configure per-game distribution settings
+
+**📊 Mystery Gift Downloads**
+- View download history
+- See which profiles downloaded which gifts
+- Track IP addresses and timestamps
+- Prevent duplicate downloads (configurable)
+
+**⚙️ Game Distribution Settings**
+- Configure how gifts are distributed per game
+- Choose distribution mode (Random/Priority/All)
+- Enable/disable download tracking
+- Set reset behavior when all gifts received
+
+**🚫 Ban Management**
+
+Three types of bans available:
+
+1. **Deny List**: Ban specific user IDs from specific games
+2. **Allow List**: Whitelist specific users (requires allowlist mode)
+3. **Banned Items**: Advanced bans by IP, MAC, Profile ID, or Session Key
+   - Set expiration dates for temporary bans
+   - Permanent bans (no expiration)
+
+**📈 Server Statistics**
+- View historical server statistics
+- Active consoles, profiles, servers
+- Daily login counts
+- Auto-generated statistics
+
+**🔑 NAS Logins**
+- Monitor Nintendo Authentication Server logins
+- See authentication tokens and data
+- Track connection attempts
+
+#### Working with the Admin Panel
+
+**Filtering and Search:**
+- Use the filter sidebar on the right to narrow down results
+- Search bar at the top for quick lookups
+- Click column headers to sort
+
+**Bulk Actions:**
+1. Select items using checkboxes on the left
+2. Choose action from dropdown at the top
+3. Click "Go"
+4. Some actions (like "ENABLE ALL GIFTS") ignore selection
+
+**Inline Editing:**
+- Some fields (like Mystery Gift "enabled" and "priority") can be edited directly in the table
+- Make changes, then click "Save" at the bottom
+
+**Export Data:**
+- Select items
+- Choose "Export selected..." from actions dropdown
+- Data available in various formats
+
+#### Quick Tips
+
+- 💡 **Friend Codes**: Automatically generated when a profile is created
+- 💡 **Console Status**: Green = online now, Orange = recently online, Gray = offline
+- 💡 **Mystery Gifts**: Use bulk actions to quickly enable/disable seasonal events
+- 💡 **Ban by MAC**: Most effective for preventing multi-profile abuse
+- 💡 **Sessions**: Expire automatically, no manual cleanup needed
 
 ### Managing Services
 
@@ -469,6 +577,113 @@ Response:
 ```
 
 See [API Documentation](docs/API_DOCUMENTATION.md) for full details.
+
+## Mystery Gifts (DLS1 Distribution)
+
+The DLS1 (Download Service) server provides automatic Mystery Gift distribution for Pokemon games.
+
+### Features
+
+- **Cross-Region Support**: All regions (USA, EUR, JPN, etc.) share the same gift pool per game family
+- **Automatic Distribution**: Gifts are automatically offered when players connect
+- **Download Tracking**: Prevents duplicate downloads (configurable per game)
+- **Flexible Management**: Enable/disable gifts, set priorities, configure date ranges
+- **Random or Priority Mode**: Choose how gifts are distributed
+- **Bulk Management**: Enable/disable all gifts at once via admin panel
+
+### Setup Mystery Gifts
+
+**1. Clone DLC files from the original repository:**
+
+```bash
+# Create sparse checkout of only the /dlc directory
+mkdir -p dlc_source
+cd dlc_source
+git init
+git remote add origin https://github.com/jonathan-priebe/dwc_network_server_emulator.git
+git config core.sparseCheckout true
+echo "dlc/*" > .git/info/sparse-checkout
+git pull origin master
+cd ..
+```
+
+**2. Import Mystery Gifts into Django:**
+
+```bash
+# Import all .myg files
+docker compose exec admin python manage.py import_mystery_gifts
+
+# Or import specific game only
+docker compose exec admin python manage.py import_mystery_gifts --game-id CPUE
+
+# Dry run to see what would be imported
+docker compose exec admin python manage.py import_mystery_gifts --dry-run
+```
+
+**3. Manage gifts in the Admin Panel:**
+
+Visit `http://your-server:7999/admin/dwc_admin/mysterygift/` to:
+- Enable/disable gifts directly in the table
+- Use bulk actions to enable/disable all gifts at once
+- Set priority for each gift
+- Configure date ranges for timed events
+
+### Supported Pokemon Games
+
+Mystery Gifts work with all Generation 4 and 5 Pokemon games:
+
+- **Diamond/Pearl** (all regions) - Share same gift pool
+- **Platinum** (all regions)
+- **HeartGold/SoulSilver** (all regions)
+- **Black/White** (all regions)
+- **Black 2/White 2** (all regions)
+
+### How Mystery Gifts Work
+
+1. Player opens "Mystery Gift" → "Receive Gift" → "Wi-Fi" in their Pokemon game
+2. DS connects to `dls1.nintendowifi.net` (proxied through Apache to DLS1 server)
+3. DLS1 server checks available gifts for that game
+4. One gift is randomly selected (or by priority, depending on settings)
+5. Gift is downloaded to the DS and can be picked up from the delivery man
+
+### Distribution Modes
+
+Configure per game in Admin Panel → Game Distribution Settings:
+
+- **Random** (Default): Pick one random gift from available pool
+- **Priority**: Show highest priority gift first
+- **All**: Show all available gifts (for non-Pokemon games)
+
+Options:
+- **Track Downloads**: Prevent duplicate downloads per user
+- **Reset on Completion**: Allow re-downloading after user has all gifts
+
+### Managing Mystery Gifts
+
+In the Django Admin Panel:
+
+**Enable/Disable Gifts:**
+- Check/uncheck the "enabled" checkbox directly in the table
+- Click "Save" at the bottom to apply changes
+
+**Bulk Actions:**
+- Select gifts (or none for "ALL" actions)
+- Choose action from dropdown:
+  - "✓ Enable selected gifts"
+  - "✗ Disable selected gifts"
+  - "✓✓ ENABLE ALL GIFTS" (ignores selection)
+  - "✗✗ DISABLE ALL GIFTS" (ignores selection)
+- Click "Go"
+
+**Set Priority:**
+- Edit priority number directly in the table
+- Higher priority = shown first (when using "Priority" mode)
+
+**Date Ranges:**
+- Set start_date and end_date for timed events
+- Gifts outside date range are automatically hidden
+
+For more details, see [dlc_source/README.md](dlc_source/README.md).
 
 ## GTS (Pokemon Trading)
 

@@ -23,6 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY admin_panel/ ./admin_panel/
 COPY dwc_server/utils/friendcode.py ./admin_panel/dwc_admin/friendcode.py
 
+# Copy DLC source files for auto-import
+COPY dlc_source/ ./dlc_source/
+
 # Copy entrypoint script
 COPY docker/entrypoints/entrypoint.admin.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
