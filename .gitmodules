@@ -6,3 +6,6 @@
 	path = dwc_server
 	url = https://github.com/jonathan-priebe/dwc-server-emulator.git
 	branch = main
+[submodule "dlc_source"]
+	path = dlc_source
+	url = https://github.com/jonathan-priebe/dwc_network_server_emulator.git
