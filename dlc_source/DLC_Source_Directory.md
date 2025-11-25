@@ -1,23 +1,14 @@
 # DLC Source Directory
 
-This directory contains Nintendo DS/Wii DLC files (.myg) for Mystery Gift distribution from the original dwc_network_server_emulator repository, using Git sparse checkout to only include the `/dlc` directory.
+This directory contains Nintendo DS/Wii DLC files (.myg) for Mystery Gift distribution from the [Pokémon Event Archiver Pipeline](https://github.com/jonathan-priebe/pkmn-event-archiver-pipeline), which aggregates and processes event data from Project Pokémon, Bulbapedia, and PokéWiki.
 
 **Mystery Gifts are fully functional!** The DLS1 server automatically distributes gifts to Pokemon games (Diamond, Pearl, Platinum, HeartGold, SoulSilver, Black, White, etc.) with cross-region support.
 
 ## Setup
 
-This directory should be created automatically using:
+The DLC files are included in this repository via Git Subtree from the [Pokémon Event Archiver Pipeline](https://github.com/jonathan-priebe/pkmn-event-archiver-pipeline).
 
-```bash
-# Create sparse checkout of only the /dlc directory
-mkdir -p dlc_source
-cd dlc_source
-git init
-git remote add origin https://github.com/jonathan-priebe/dwc_network_server_emulator.git
-git config core.sparseCheckout true
-echo "dlc/*" > .git/info/sparse-checkout
-git pull origin master
-```
+When you clone this repository, the DLC files are automatically included in `dlc_source/dlc/`.
 
 ## Structure
 
@@ -25,10 +16,10 @@ git pull origin master
 dlc_source/
 └── dlc/
     ├── CPUE/          # Pokemon Platinum (USA)
-    │   ├── *.myg      # Mystery Gift files
-    │   └── _list.txt  # File listing
+    │   └── *.myg      # Mystery Gift files
     ├── IRBE/          # Pokemon Black (USA)
-    └── ...            # Other game IDs
+    ├── IPGE/          # Pokemon SoulSilver (USA)
+    └── ...            # Other game IDs (20+ games)
 ```
 
 ## Importing to Django
@@ -58,16 +49,22 @@ python manage.py import_mystery_gifts --game-id CPUE
 python manage.py import_mystery_gifts --overwrite
 ```
 
-## Updating
+## Updating DLC Files
 
-To update the DLC files from upstream:
+To update the DLC files from the Event Archiver Pipeline:
 
 ```bash
-cd dlc_source
-git pull origin master
+# From repository root
+git subtree pull --prefix=dlc_source/dlc \
+  https://github.com/jonathan-priebe/pkmn-event-archiver-pipeline.git main \
+  --squash
 ```
 
-Then re-run the import command with `--overwrite` to update existing gifts.
+Then re-run the import command with `--overwrite` to update existing gifts in Django:
+
+```bash
+docker compose exec admin python manage.py import_mystery_gifts --overwrite
+```
 
 ## Game IDs
 
@@ -124,8 +121,9 @@ In the Django Admin Panel (`http://your-server:7999/admin/dwc_admin/mysterygift/
 
 ## Notes
 
-- This directory is in `.gitignore` - each developer/deployment needs to set it up locally
-- Files are stored in Django's media directory after import
+- DLC files are included in the repository via Git Subtree (no separate setup needed)
+- Files are imported into Django's media directory via the `import_mystery_gifts` command
 - Original files remain in `dlc_source/dlc/` for reference
 - Mystery Gifts are served via DLS1 server on port 9003 (proxied through Apache)
 - Downloads work with original Nintendo DS/DSi hardware
+- To update DLC files, use `git subtree pull` (see Updating section above)

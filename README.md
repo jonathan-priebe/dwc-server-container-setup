@@ -593,21 +593,9 @@ The DLS1 (Download Service) server provides automatic Mystery Gift distribution 
 
 ### Setup Mystery Gifts
 
-**1. Clone DLC files from the original repository:**
+**DLC files are included!** This repository includes Mystery Gift files via Git Subtree from the [Pokémon Event Archiver Pipeline](https://github.com/jonathan-priebe/pkmn-event-archiver-pipeline). No separate download needed - just import them:
 
-```bash
-# Create sparse checkout of only the /dlc directory
-mkdir -p dlc_source
-cd dlc_source
-git init
-git remote add origin https://github.com/jonathan-priebe/dwc_network_server_emulator.git
-git config core.sparseCheckout true
-echo "dlc/*" > .git/info/sparse-checkout
-git pull origin master
-cd ..
-```
-
-**2. Import Mystery Gifts into Django:**
+**Import Mystery Gifts into Django:**
 
 ```bash
 # Import all .myg files
@@ -620,7 +608,19 @@ docker compose exec admin python manage.py import_mystery_gifts --game-id CPUE
 docker compose exec admin python manage.py import_mystery_gifts --dry-run
 ```
 
-**3. Manage gifts in the Admin Panel:**
+**Update DLC files from upstream:**
+
+```bash
+# Pull latest Mystery Gifts from Event Archiver Pipeline
+git subtree pull --prefix=dlc_source/dlc \
+  https://github.com/jonathan-priebe/pkmn-event-archiver-pipeline.git main \
+  --squash
+
+# Re-import to Django
+docker compose exec admin python manage.py import_mystery_gifts --overwrite
+```
+
+**Manage gifts in the Admin Panel:**
 
 Visit `http://your-server:7999/admin/dwc_admin/mysterygift/` to:
 - Enable/disable gifts directly in the table
