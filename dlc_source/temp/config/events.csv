@@ -1,0 +1,188 @@
+EventName,GameCodes,Regions,Year
+# --- 10TH ANNIVERSARY (GEN 4) ---
+10th Anniversary Mew,"ADAE,CPUE","EUR",2006
+10th Anniversary Celebi,"ADAE,CPUE","EUR",2006
+10th Anniversary Pikachu,"ADAE,CPUE","EUR",2006
+10th Anniversary Lugia,"ADAE,CPUE","EUR",2006
+10th Anniversary Ho-Oh,"ADAE,CPUE","EUR",2006
+10th Anniversary Entei,"ADAE,CPUE","EUR",2006
+10th Anniversary Raikou,"ADAE,CPUE","EUR",2006
+10th Anniversary Suicune,"ADAE,CPUE","EUR",2006
+10th Anniversary Articuno,"ADAE,CPUE","EUR",2006
+10th Anniversary Zapdos,"ADAE,CPUE","EUR",2006
+10th Anniversary Moltres,"ADAE,CPUE","EUR",2006
+
+# --- MOVIE & LEGENDARY EVENTS (GEN 4) ---
+Movie Darkrai 2007,"ADAE,CPUE","JPN,USA,EUR",2007
+Movie Deoxys 2007,"ADAE,CPUE","JPN",2007
+Movie Shaymin 2008,"ADAE,CPUE","JPN,USA,EUR",2008
+Movie Regigigas 2008,"ADAE,CPUE","JPN,USA,EUR",2008
+Movie Arceus 2009,"CPTE","JPN,USA,EUR",2009
+Member Card Darkrai,"ADAE,CPUE","USA,EUR",2009
+Oak's Letter Shaymin,"ADAE,CPUE,CPTE","USA,EUR",2009
+Azure Flute Arceus (unreleased),"CPTE","JPN",2009
+Shiny Raikou (Gamestop),"IPGE","USA,EUR",2011
+Shiny Entei (Gamestop),"IPGE","USA,EUR",2011
+Shiny Suicune (Gamestop),"IPGE","USA,EUR",2011
+Celebi (Gamestop),"IPGE","USA,EUR",2011
+Shiny Pichu (Pokémon Center),"IPGE","JPN",2009
+Shiny Milotic (PC Tokyo/VGC),"IPGE","JPN,USA",2009
+Shiny Eevee (VGC),"IPGE","JPN,USA",2010
+Ash's Pikachu (Movie 2010),"IPGE","JPN,USA",2010
+Mew (Fall 2010 Wi-Fi),"IPGE","USA,EUR",2010
+Jirachi (Summer 2010 Wi-Fi),"IPGE","USA,EUR",2010
+Regigigas (TRU/Movie EU),"ADAE,CPUE","USA,EUR",2008
+
+# --- MYSTERY ITEMS (GEN 4) ---
+Secret Key,"ADAD,APAD,CPUE,CPTE","ENG,FRA,GER,ITA,SPN,JPN,KOR",2009
+Member Card,"ADAD,APAD,CPUE,CPTE","ENG,FRA,GER,ITA,SPN,JPN,KOR",2009
+Oak's Letter,"ADAD,APAD,CPUE,CPTE","ENG,FRA,GER,ITA,SPN,JPN,KOR",2009
+Enigma Stone,"IPGE","ENG,FRA,GER,ITA,SPN,JPN,KOR",2010
+
+# --- POKÉTOPIA / BATTLE EVENTS (GEN 4) ---
+Poketopia Electivire,"ADAE,ADAK,ADAS","USA,EUR,JPN",2007
+Poketopia Magmortar,"ADAE,ADAK,ADAS","USA,EUR,JPN",2007
+Poketopia Pikachu,"ADAE,ADAK,ADAS","USA,EUR,JPN",2007
+Concert Chatot,"ADAE,ADAK,ADAS","USA,EUR,JPN",2007
+Pal City Manaphy,"ADAE,ADAK,ADAS","JPN",2007
+Pal City Mew,"ADAE,ADAK,ADAS","JPN",2007
+Pal City Lucario,"ADAE,ADAK,ADAS","JPN",2007
+Worlds 2010 Crobat,"IPGE","USA",2010
+Worlds 2010 Eevee,"IPGE","USA",2010
+Almia Darkrai,"IPGE","ENG,FRA,GER,ITA,SPN,JPN",2008
+
+# --- POKÉWALKER ROUTES (GEN 4) ---
+Yellow Forest Course,"ADAE","ENG,FRA,GER,ITA,SPN,JPN,KOR",2010
+Winner's Path Course,"ADAE","ENG,FRA,GER,ITA,SPN,JPN,KOR",2010
+Shopping Course,"IPGE","JPN",2010
+Amity Field Course,"IPGE","JPN",2010
+
+# --- MOVIE & LEGENDARY EVENTS (GEN 5) ---
+Victini Liberty Pass,"IRBO,IRAO","JPN,USA,EUR",2011
+Victini (Wi-Fi/Movie),"IRBO,IRAO","ENG,FRA,GER,ITA,SPN,JPN",2011
+Zoroark Event,"IRBO,IRAO","USA,EUR",2011
+Winter Celebi (Wi-Fi),"IRBO,IRAO","EUR",2011
+Meloetta (Wi-Fi),"IRBO,IRAO","USA,EUR",2012
+Keldeo (Movie 2012),"IREO,IRDO","JPN,USA,EUR",2012
+Genesect (Movie 2012),"IREO,IRDO","JPN,USA,EUR",2012
+Mewtwo (Pokémon Hills),"IRBO,IRAO","JPN",2012
+Deoxys (Wi-Fi B2W2),"IRBO,IRAO","USA,EUR",2013
+Shiny Sinnoh Dragons (Dialga/Palkia/Giratina),"IREO,IRDO","USA,EUR",2013
+Spring 2013 Meloetta,"IRBO,IRAO","USA,EUR",2013
+Shiny Genesect (Movie 2013),"IREO,IRDO","JPN",2013
+Hidden Ability Eeveelutions (Dream World),"IRBO,IRAO","JPN,USA,EUR",2011
+Reshiram (Wi-Fi B2W2),"IRBO,IRAO","JPN,USA,EUR",2012
+Zekrom (Wi-Fi B2W2),"IRBO,IRAO","JPN,USA,EUR",2012
+Darkrai (May 2012 Wi-Fi),"IRBO,IRAO","USA,EUR",2012
+
+# --- COMPETITIVE & MISC (GEN 5) ---
+Worlds 2012 Pikachu,"IRBO,IRAO","USA",2012
+Worlds 2013 Smeargle,"IREO,IRDO","USA",2013
+Shiny Larvitar (VGC 2012),"IRBO,IRAO","USA,EUR",2012
+Shiny Metagross (VGC 2013),"IREO,IRDO","USA,EUR",2013
+Shelmet (EU Pokémon Day),"IRBO,IRAO","EUR",2011
+Karrablast (EU Pokémon Day),"IRBO,IRAO","EUR",2011
+Secret Egg (TRU: Pidove, Axew, Pansage),"IRBO,IRAO","USA",2011
+
+# --- KOREAN EXCLUSIVE EVENTS (KOR) ---
+Hanguk Regigigas,"IPGK","KOR",2009
+Hanguk Deoxys,"IPGK","KOR",2009
+Hanguk Manaphy,"IPGK","KOR",2009
+Hanguk Mew,"IPGK","KOR",2009
+Hanguk Rayquaza,"IPGK","KOR",2009
+Crown Entei,"IPGK","KOR",2010
+Crown Suicune,"IPGK","KOR",2010
+Crown Raikou,"IPGK","KOR",2010
+Pikachu-Colored Pichu,"IPGK","KOR",2010
+
+# --- POKÉMON CENTER BIRTHDAY (ALL GEN 4/5) ---
+Pokémon Center Birthday Starters (Gen1–Gen5),"ADAE,CPUE,IPGE,IRBO,IRAO,IREO","JPN",2010
+
+# --- ADDITIONAL GEN 4 EVENTS (2007-2011) ---
+Toys R Us Dragonite,"ADAE,CPUE","USA",2008
+TRU Manaphy,"ADAE","USA",2007
+Toys R Us Shaymin,"ADAE,CPUE","USA",2009
+VGC09 Milotic,"ADAE,CPUE","USA,EUR",2009
+GameStop Deoxys,"ADAE,CPUE","USA",2008
+ALAMOS Darkrai,"ADAE,CPUE","USA",2008
+E4ALL Manaphy,"ADAE","USA",2007
+Wi-Fi Mew (Fall 2010),"ADAE,CPUE,IPGE","USA,EUR",2010
+Wi-Fi Jirachi (Summer 2010),"ADAE,CPUE,IPGE","USA,EUR",2010
+Night Sky Jirachi,"ADAE,CPUE,IPGE","USA,EUR,AUS",2010
+Gamestop Jirachi,"IPGE","USA",2010
+Wi-Fi Pikachu-colored Pichu,"ADAE,CPUE,IPGE","USA,EUR",2010
+Pikachu-Colored Pichu,"ADAE,CPUE,IPGE","USA,EUR",2010
+Wi-Fi Crown Raikou,"ADAE,CPUE,IPGE","USA,EUR",2011
+Wi-Fi Crown Entei,"ADAE,CPUE,IPGE","USA,EUR",2011
+Wi-Fi Crown Suicune,"ADAE,CPUE,IPGE","USA,EUR",2011
+Toys R Us Arceus,"CPUE","USA",2009
+GameStop Jirachi,"IPGE","USA",2010
+GameStop Shiny Pichu,"IPGE","USA",2010
+GameStop Celebi,"IPGE","USA,EUR",2011
+Ash's Pikachu (TRU 2011),"IPGE","USA",2011
+Worlds 2009 Weavile,"ADAE,CPUE","USA",2009
+Worlds 2010 Crobat,"IPGE","USA",2010
+VGC10 Shiny Eevee,"IPGE","USA,EUR",2010
+Eigakan Arceus,"ADAJ,CPUJ","JPN",2009
+Eigakan Darkrai,"ADAJ","JPN",2007
+Eigakan Shaymin,"ADAJ,CPUJ","JPN",2008
+Eigakan Regigigas,"ADAJ,CPUJ","JPN",2008
+Movie Deoxys 2007,"ADAJ","JPN",2007
+Pikachu-Colored Pichu (Movie Pre-order),"ADAJ,CPUJ,IPGJ","JPN",2009
+Pokemon Center Yokohama Pikachu,"ADAJ,CPUJ","JPN",2007
+Strongest Electivire,"ADAJ","JPN",2007
+Strongest Magmortar,"ADAJ","JPN",2007
+Strongest Dragonite,"ADAJ,CPUJ","JPN",2008
+Strongest Salamence,"ADAJ,CPUJ","JPN",2008
+Space Center Deoxys,"ADAJ","JPN",2008
+Sunday Tropius,"ADAJ","JPN",2007
+Sunday Octillery,"ADAJ","JPN",2007
+McDonald's Pikachu,"IPGJ","JPN",2010
+McDonald's Wobbuffet,"IPGJ","JPN",2010
+Singing Pikachu,"IPGJ","JPN",2010
+Character Fair Pikachu,"IPGK","KOR",2010
+Character Fair Milotic,"IPGK","KOR",2010
+Character Fair Shaymin,"IPGK","KOR",2010
+Shinsegae Munchlax,"IPGK","KOR",2010
+Shinsegae Feebas,"IPGK","KOR",2010
+
+# --- ADDITIONAL GEN 5 EVENTS (2011-2014) ---
+Plasma Deoxys (Wi-Fi),"IRBO,IREO","USA,EUR",2013
+Winter 2013 Keldeo,"IREO","USA,EUR",2013
+Plasma Genesect,"IREO","USA,EUR",2012
+Spring 2012 Reshiram,"IRBO","USA,EUR",2012
+Spring 2012 Zekrom,"IRBO","USA,EUR",2012
+February 2012 Mewtwo,"IRBO","USA,EUR",2012
+Movie 14 Victini,"IRBO","USA,EUR,JPN",2011
+Spring 2013 Meloetta,"IREO","USA,EUR",2013
+Summer 2013 Shiny Dialga,"IREO","USA,EUR",2013
+Summer 2013 Shiny Palkia,"IREO","USA,EUR",2013
+Summer 2013 Shiny Giratina,"IREO","USA,EUR",2013
+Worlds 2012 Pikachu,"IRBO","USA",2012
+Worlds 2013 Smeargle,"IREO","USA",2013
+VGC12 Shiny Larvitar,"IRBO","USA,EUR",2012
+VGC13 Shiny Metagross,"IREO","USA,EUR",2013
+Ray Rizzo's Metagross,"IREO","USA,EUR,ITA",2013
+Toler Webb's Ludicolo,"IREO","USA",2013
+Spring 2012 Zekrom (Korean),"IRBK","KOR",2012
+Nobunaga's Black Rayquaza,"IRBJ","JPN",2012
+Eigakan Meloetta,"IRBJ,IREJ","JPN",2012
+Eigakan Genesect,"IRBJ,IREJ","JPN",2013
+Pokémon Center 15th Anniversary Rayquaza,"IRBJ","JPN",2013
+Birthday Audino,"IRBJ,IREJ","JPN",2011
+Birthday Togekiss,"IRBJ,IREJ","JPN",2012
+Iris's Axew,"IRBJ","JPN",2011
+Cilan's Pansage,"IRBJ","JPN",2011
+Ash's Scraggy,"IRBJ","JPN",2011
+N's Pokemon (Zorua/Darmanitan/Sigilyph),"IRBJ,IREJ","JPN",2012
+Pokémon Smash Cubchoo,"IRBJ","JPN",2012
+Pokémon Smash Mewtwo,"IRBJ","JPN",2012
+Carlita's Hydreigon,"IRBJ","JPN",2011
+Juanita's Golurk,"IRBJ","JPN",2011
+Alder's Volcarona,"IREJ","JPN",2012
+Pokémon Center Nagoya Shiny Magikarp,"IRBJ","JPN",2012
+Strongest Class Dragonite,"IRBJ","JPN",2013
+Pokémon Hills Mewtwo,"IRBO,IREO","Indonesia,Philippines",2013
+Secret Egg Axew,"IRBO","USA",2011
+Secret Egg Pidove,"IRBO","USA",2011
+Secret Egg Pansage,"IRBO","USA",2011
