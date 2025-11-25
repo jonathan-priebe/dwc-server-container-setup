@@ -398,32 +398,32 @@ The Django Admin Panel is your central hub for managing the WFC server, player p
 
 #### Admin Panel Sections
 
-**📱 Consoles**
+**Consoles**
 - View all registered Nintendo DS/Wii consoles
 - Enable/disable consoles (prevent specific devices from connecting)
 - See last connection time and status
 - Filter by platform (DS, DSi, Wii)
 - **Bulk Actions**: Enable/disable multiple consoles at once
 
-**👤 Profiles**
+**Profiles**
 - View all player profiles with friend codes
 - See which games each player owns
 - Enable/disable profiles
 - View GameSpy authentication data
 - Filter by game ID
 
-**🎮 Game Servers**
+**Game Servers**
 - Monitor active game rooms (Mario Kart, etc.)
 - See server address, player count, and status
 - View which profile is hosting
 - Automatically cleaned up when servers go offline
 
-**🔐 Sessions**
+**Sessions**
 - View active GameSpy login sessions
 - See when players logged in
 - Sessions expire after 24 hours of inactivity
 
-**🎁 Mystery Gifts**
+**Mystery Gifts**
 - Import, enable/disable Mystery Gifts
 - Set priority and date ranges
 - **Quick Enable/Disable**: Check/uncheck directly in the table
@@ -433,19 +433,19 @@ The Django Admin Panel is your central hub for managing the WFC server, player p
 - Track download statistics
 - Configure per-game distribution settings
 
-**📊 Mystery Gift Downloads**
+**Mystery Gift Downloads**
 - View download history
 - See which profiles downloaded which gifts
 - Track IP addresses and timestamps
 - Prevent duplicate downloads (configurable)
 
-**⚙️ Game Distribution Settings**
+**Game Distribution Settings**
 - Configure how gifts are distributed per game
 - Choose distribution mode (Random/Priority/All)
 - Enable/disable download tracking
 - Set reset behavior when all gifts received
 
-**🚫 Ban Management**
+**Ban Management**
 
 Three types of bans available:
 
@@ -455,13 +455,13 @@ Three types of bans available:
    - Set expiration dates for temporary bans
    - Permanent bans (no expiration)
 
-**📈 Server Statistics**
+**Server Statistics**
 - View historical server statistics
 - Active consoles, profiles, servers
 - Daily login counts
 - Auto-generated statistics
 
-**🔑 NAS Logins**
+**NAS Logins**
 - Monitor Nintendo Authentication Server logins
 - See authentication tokens and data
 - Track connection attempts
@@ -490,11 +490,11 @@ Three types of bans available:
 
 #### Quick Tips
 
-- 💡 **Friend Codes**: Automatically generated when a profile is created
-- 💡 **Console Status**: Green = online now, Orange = recently online, Gray = offline
-- 💡 **Mystery Gifts**: Use bulk actions to quickly enable/disable seasonal events
-- 💡 **Ban by MAC**: Most effective for preventing multi-profile abuse
-- 💡 **Sessions**: Expire automatically, no manual cleanup needed
+- **Friend Codes**: Automatically generated when a profile is created
+- **Console Status**: Green = online now, Orange = recently online, Gray = offline
+- **Mystery Gifts**: Use bulk actions to quickly enable/disable seasonal events
+- **Ban by MAC**: Most effective for preventing multi-profile abuse
+- **Sessions**: Expire automatically, no manual cleanup needed
 
 ### Managing Services
 
