@@ -612,7 +612,7 @@ docker compose exec admin python manage.py import_mystery_gifts --dry-run
 
 ```bash
 # Pull latest Mystery Gifts from Event Archiver Pipeline
-git subtree pull --prefix=dlc_source/dlc \
+git subtree pull --prefix=dlc_source \
   https://github.com/jonathan-priebe/pkmn-event-archiver-pipeline.git main \
   --squash
 

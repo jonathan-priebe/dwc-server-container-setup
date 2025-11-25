@@ -55,7 +55,7 @@ To update the DLC files from the Event Archiver Pipeline:
 
 ```bash
 # From repository root
-git subtree pull --prefix=dlc_source/dlc \
+git subtree pull --prefix=dlc_source \
   https://github.com/jonathan-priebe/pkmn-event-archiver-pipeline.git main \
   --squash
 ```
